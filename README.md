@@ -9,12 +9,16 @@ cd client
 npm start
 ```
 
+This runs the frontend on default port `3000`
+
 
 ## To run the backend, in a separate terminal use:
 ```
 cd api
 npm run dev
 ```
+
+This runs the backend on port `9000`. Change this in your `.env` file.
 
 
 place `.env` file inside of `/api folder`. Here you will need:
