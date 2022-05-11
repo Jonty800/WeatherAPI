@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    container_name: client-container
+    command: npm start
+    stdin_open: true
+    depends_on:
+      - api
+
+  db:
+    image: mysql:5.7
+    restart: always
+    platform: linux/x86_64 # for my M1 macbook
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: weather
+    ports:
+      - "3308:3306"
+    expose:
+      - 3308
+    healthcheck:
+      test: ["CMD", 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-ppassword' ]
+      timeout: 20s
+      retries: 3
+
+  api:
+    build: ./api
+    ports:
+      - "9000:9000"
+    container_name: api-container
+    command: npm run dev
+    depends_on:
+      db:
+        condition: service_healthy

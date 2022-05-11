@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import fetch, { RequestInit } from "node-fetch";
 import WeatherGetRequest from "../../types/WeatherGetRequest";
 import { Data, RootObject } from "../../types/WeatherResponse";
