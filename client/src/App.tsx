@@ -1,7 +1,7 @@
 import "./App.css";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { getWeatherByPostcode } from "./api";
+import api from "./api";
 import { Weather } from "./types/WeatherResponse";
 import WeatherItem from "./components/WeatherItem";
 import LeftPlane from "./components/LeftPlane";
@@ -18,7 +18,8 @@ function App() {
    * Fetch weather data for the postcode state
    */
   const getWeather = () => {
-    getWeatherByPostcode(postcode)
+    api
+      .getWeatherByPostcode(postcode)
       .then((data: any) => {
         console.log("data", data);
         setWeather(data?.weather);

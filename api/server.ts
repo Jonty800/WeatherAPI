@@ -4,7 +4,7 @@ import cors from "cors";
 import compression from "compression";
 import basicAuth from "express-basic-auth";
 import { getUnauthorizedResponse } from "./utils";
-import { initDb } from "../api/database/utils";
+import database from "./database";
 import { query } from "express-validator";
 
 dotenv.config(); //loads env variables from .env file
@@ -48,11 +48,9 @@ export function startServer(): Express {
 
 const port: string = process.env.PORT || "9000"; //sets port
 
-//init db
-const db = require("./database/db");
 //start server
 startServer().listen(port, async () => {
   //listens on port
   console.log(`App listening on port ${port}`);
-  await initDb(db); //initialises db
+  await database.initDb(database.connection); //initialises db
 });

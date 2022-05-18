@@ -5,7 +5,7 @@
  * @param postcode The postcode of the user
  * @returns The weather data
  */
-export const getWeatherByPostcode = (postcode: string) => {
+export default function getWeatherByPostcode(postcode: string) {
   console.log(`Getting weather for postcode ${postcode}`);
   return new Promise((resolve, reject) => {
     if (!postcode) {
@@ -33,4 +33,4 @@ export const getWeatherByPostcode = (postcode: string) => {
         reject(error); //returns the error in the promise
       });
   });
-};
+}

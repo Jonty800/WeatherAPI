@@ -4,11 +4,11 @@ import WeatherGetRequest from "../../types/WeatherGetRequest";
 import { Data, RootObject } from "../../types/WeatherResponse";
 import { isValidPostcode } from "../../utils";
 import { validationResult } from "express-validator";
-import { insertOrUpdateIntoDb } from "../../database/utils";
+import database from "../../database";
 import moment from "moment";
-const db = require("../../database/db");
+import ErrorPayload from "../../utils/ErrorPayload";
 
-let router = express.Router();
+const router = express.Router();
 const FORMAT: string = "json";
 const dateFormat: string = "YYYY-MM-DD";
 
@@ -24,9 +24,7 @@ router.get(
 
     if (!query || !Object.entries(query).length) {
       //if no query or query has no entries
-      return res
-        .status(400)
-        .json({ error: true, message: "No query data provided" }); //return error
+      return res.status(400).json(ErrorPayload.NoQueryDataError); //return error
     }
 
     //drop table weather_data if it exists
@@ -46,11 +44,12 @@ router.get(
 
     if (!isValidPostcode(postcode)) {
       //if postcode is not valid
-      return res.status(400).json({ error: true, message: "Invalid postcode" }); //return error
+      return res.status(400).json(ErrorPayload.NoPostcodeError); //return error
     }
 
     //first, check if the weather data is in the database
-    const databaseData = await db("weather_data")
+    const databaseData = await database
+      .connection("weather_data")
       .where("postcode", postcode)
       .whereBetween("date", [startDate, endDate])
       .select()
@@ -73,18 +72,12 @@ router.get(
 
     if (!key) {
       // if key is not defined, return error
-      return res.status(500).json({
-        error: true,
-        message: "No worldweatheronline.com API key found",
-      });
+      return res.status(500).json(ErrorPayload.WorldWeatherError);
     }
 
     if (!postcode) {
       //if postcode is not defined, return error
-      return res.status(400).json({
-        error: true,
-        message: "No postcode provided",
-      });
+      return res.status(400).json(ErrorPayload.NoPostcodeError);
     }
 
     var requestOptions: RequestInit = {
@@ -119,7 +112,7 @@ router.get(
           weather.location = data?.nearest_area?.[0]?.areaName?.[0]
             .value as string; //get location from nearest_area
           weather.postcode = postcode; //add postcode to weather object
-          await insertOrUpdateIntoDb(weather, db); //TODO improve by using a bulk insert
+          await database.insertOrUpdate(weather, database.connection); //TODO improve by using a bulk insert
         });
         res.json({ weather: data?.weather } || { weather: [] }); //return data
       })

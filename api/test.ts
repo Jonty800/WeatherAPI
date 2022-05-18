@@ -1,13 +1,13 @@
 const { startServer } = require("./server");
 const supertest = require("supertest");
-import { initDb } from "../api/database/utils";
+import database from "./database";
 const basicAuthUsername: string = process.env.BASIC_AUTH_USERNAME || ""; //sets basic auth username
 const basicAuthPassword: string = process.env.BASIC_AUTH_PASSWORD || ""; //sets basic auth password
 let requestWithSupertest: any = undefined;
 
 beforeAll(async () => {
-  const db = require("./database/db");
-  await initDb(db); //initialises db
+  const db = database.connection;
+  await database.initDb(db); //initialises db
   const server = await startServer(); //starts server
   requestWithSupertest = supertest(server); //creates supertest server
 });
