@@ -1,4 +1,4 @@
-import ApiError from "./ApiError";
-import ErrorPayload from "./ErrorPayload";
+import ApiError from "./api-error";
+import ErrorPayload from "./error-payload";
 
 export default { ApiError, ErrorPayload };

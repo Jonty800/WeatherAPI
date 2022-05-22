@@ -1,8 +1,8 @@
 import "./App.css";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "./api";
-import { Weather } from "./types/WeatherResponse";
+import { Weather } from "./types/weather-response";
 import WeatherItem from "./components/WeatherItem";
 import LeftPlane from "./components/LeftPlane";
 
@@ -10,24 +10,21 @@ function App() {
   const [weather, setWeather] = useState<Weather[]>([]);
   const [postcode, setPostcode] = useState<string>("BS15 3FW");
   const [editing, setEditing] = useState<boolean>(false);
-  const [selectedWeather, setSelectedWeather] = useState<Weather | undefined>(
-    undefined
-  );
+  const [selectedWeather, setSelectedWeather] = useState<Weather | undefined>();
 
   /**
    * Fetch weather data for the postcode state
    */
-  const getWeather = () => {
+  const getWeather = useCallback(() => {
     api
       .getWeatherByPostcode(postcode)
       .then((data: any) => {
-        console.log("data", data);
         setWeather(data?.weather);
       })
       .catch((err) => {
         console.log(err);
       });
-  };
+  }, [postcode]); //only update when postcode changes
 
   useEffect(() => {
     getWeather();
@@ -35,7 +32,7 @@ function App() {
 
   useEffect(() => {
     if (weather && weather?.length) {
-      setSelectedWeather(weather[0]);
+      setSelectedWeather(weather?.[0]);
     }
   }, [weather]); //only called when weather changes
 

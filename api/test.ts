@@ -7,7 +7,7 @@ let requestWithSupertest: any = undefined;
 
 beforeAll(async () => {
   const db = database.connection;
-  await database.initDb(db); //initialises db
+  await database.initDatabase(db); //initialises db
   const server = await startServer(); //starts server
   requestWithSupertest = supertest(server); //creates supertest server
 });

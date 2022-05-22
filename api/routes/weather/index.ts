@@ -1,12 +1,15 @@
 import express, { Request, Response } from "express";
 import fetch, { RequestInit } from "node-fetch";
-import WeatherGetRequest from "../../types/WeatherGetRequest";
-import { Data, RootObject } from "../../types/WeatherResponse";
+import WeatherGetRequest from "../../types/weather-get-request";
+import { Data, RootObject } from "../../types/weather-response";
 import { isValidPostcode } from "../../utils";
 import { validationResult } from "express-validator";
 import database from "../../database";
 import moment from "moment";
-import ErrorPayload from "../../utils/ErrorPayload";
+import ErrorPayload from "../../utils/error-payload";
+import { TABLE_NAME } from "../../database/constants";
+import log from "../../utils/logger/logger";
+import { LogLevel } from "../../utils/logger/LogLevel";
 
 const router = express.Router();
 const FORMAT: string = "json";
@@ -32,6 +35,11 @@ router.get(
     const end_date: string = query.end_date as string;
     const postcode: string | undefined = query.postcode as string;
 
+    if (!isValidPostcode(postcode)) {
+      //if postcode is not valid
+      return res.status(400).json(ErrorPayload.NoPostcodeError); //return error
+    }
+
     //format into standard unix timestamp
     const startDateMoment = moment(start_date, dateFormat);
     const endDateMoment = moment(end_date, dateFormat);
@@ -42,20 +50,16 @@ router.get(
     //there is not end_date in the worldweatheronline api so we have to use the start_date and calc the number of days between start and end date
     const num_of_days = endDateMoment.diff(startDateMoment, "days");
 
-    if (!isValidPostcode(postcode)) {
-      //if postcode is not valid
-      return res.status(400).json(ErrorPayload.NoPostcodeError); //return error
-    }
-
     //first, check if the weather data is in the database
     const databaseData = await database
-      .connection("weather_data")
+      .connection(TABLE_NAME)
       .where("postcode", postcode)
       .whereBetween("date", [startDate, endDate])
       .select()
       .catch((err: any) => {
         //if error
-        console.log(err);
+        log(err, LogLevel.error);
+        return res.status(500).json(ErrorPayload.DatabaseError); //return error
       });
 
     if (databaseData?.length) {
@@ -63,7 +67,7 @@ router.get(
       if (num_of_days === databaseData?.length - 1) {
         //if we have all the data
         //otherwise we'll need to call the API to download the missing data
-        console.log("fetching from db");
+        log("fetching from db");
         return res.status(200).json({ weather: databaseData });
       }
     }
@@ -112,12 +116,12 @@ router.get(
           weather.location = data?.nearest_area?.[0]?.areaName?.[0]
             .value as string; //get location from nearest_area
           weather.postcode = postcode; //add postcode to weather object
-          await database.insertOrUpdate(weather, database.connection); //TODO improve by using a bulk insert
+          await database.insertOrUpdate(weather); //TODO improve by using a bulk insert
         });
         res.json({ weather: data?.weather } || { weather: [] }); //return data
       })
       .catch((error) => {
-        console.log("error", error);
+        log(error, LogLevel.error);
       });
   }
 );

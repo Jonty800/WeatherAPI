@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Weather } from "../types/WeatherResponse";
+import { Weather } from "../types/weather-response";
 import moment from "moment";
 
 var days = [
@@ -15,7 +15,7 @@ var days = [
 const getLongDay = (epoch: number) => {
   var date = new Date(epoch * 1000);
   return days[date.getDay()];
-}; 
+};
 
 const getDateString = (epoch: number) => {
   return moment(epoch * 1000).format("MMM Do");

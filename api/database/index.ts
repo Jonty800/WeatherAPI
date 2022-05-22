@@ -1,9 +1,9 @@
-import initDb from "./init";
-import insertOrUpdate from "./insertOrUpdate";
-const connection = require("./db");
+import initDatabase from "./init";
+import insertOrUpdate from "./insert-update";
+const connection = require("./database");
 
 export default {
   insertOrUpdate,
-  initDb,
+  initDatabase,
   connection,
 };

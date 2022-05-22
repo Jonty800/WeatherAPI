@@ -1,15 +1,18 @@
 import * as Knex from "knex";
+import log from "../utils/logger/logger";
+import { LogLevel } from "../utils/logger/LogLevel";
+import { TABLE_NAME } from "./constants";
 
-export default async function initDb(knex: Knex.Knex) {
+export default async function initDatabase(knex: Knex.Knex) {
   const hasTable = await knex.schema
-    .hasTable("weather_data")
+    .hasTable(TABLE_NAME)
     .catch((err: Error) => {
-      console.log(err);
+      log(err, LogLevel.error);
     });
   if (!hasTable) {
     //if table doesn't exist
     await knex.schema //create table
-      .createTable("weather_data", (table: Knex.Knex.TableBuilder) => {
+      .createTable(TABLE_NAME, (table: Knex.Knex.TableBuilder) => {
         table.increments(); //id column (primary key)
         table.string("postcode").notNullable();
         table.integer("date").notNullable();
@@ -26,12 +29,15 @@ export default async function initDb(knex: Knex.Knex) {
       })
       .then(() => {
         //add an index to the postcode column
-        return knex.raw(
-          "CREATE INDEX weather_data_postcode_index ON weather_data (postcode)"
+        return knex.schema.alterTable(
+          TABLE_NAME,
+          (table: Knex.Knex.TableBuilder) => {
+            table.index("postcode");
+          }
         );
       })
       .catch((err: Error) => {
-        console.log(err);
+        log(err, LogLevel.error);
       });
   }
 }

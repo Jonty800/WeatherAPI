@@ -6,6 +6,7 @@ import basicAuth from "express-basic-auth";
 import { getUnauthorizedResponse } from "./utils";
 import database from "./database";
 import { query } from "express-validator";
+import log from "./utils/logger/logger";
 
 dotenv.config(); //loads env variables from .env file
 
@@ -51,6 +52,6 @@ const port: string = process.env.PORT || "9000"; //sets port
 //start server
 startServer().listen(port, async () => {
   //listens on port
-  console.log(`App listening on port ${port}`);
-  await database.initDb(database.connection); //initialises db
+  log(`App listening on port ${port}`);
+  await database.initDatabase(database.connection); //initialises db
 });
